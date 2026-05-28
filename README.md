@@ -61,6 +61,72 @@ To run gradio demo, simply run:
 python gradio_demo.py
 ```
 
+## FastAPI Server
+An alternative to the Gradio demo is the FastAPI server, which exposes a REST API that can be called from tools like **Postman**, **cURL**, or any HTTP client.
+
+### Running the Server
+Install the additional dependencies (if not already installed):
+```bash
+pip install fastapi uvicorn python-multipart
+```
+
+Start the server:
+```bash
+python fastapi_server.py
+```
+The server will start at `http://localhost:8000`.
+
+### API Endpoints
+
+#### `GET /health`
+Health check endpoint to verify the server is running.
+
+**Response:**
+```json
+{
+  "status": "healthy"
+}
+```
+
+#### `POST /process`
+Processes a screenshot image and returns parsed UI elements with bounding boxes.
+
+**Request** (`multipart/form-data`):
+
+| Parameter        | Type    | Required | Default | Description                                      |
+|------------------|---------|----------|---------|--------------------------------------------------|
+| `image`          | File    | Yes      | —       | The screenshot image to parse                    |
+| `box_threshold`  | float   | No       | `0.05`  | Confidence threshold for bounding box detection   |
+| `iou_threshold`  | float   | No       | `0.1`   | IoU threshold for removing overlapping boxes      |
+| `use_paddleocr`  | bool    | No       | `true`  | Whether to use PaddleOCR for text recognition     |
+| `imgsz`          | int     | No       | `640`   | Image size for icon detection                     |
+
+**Response:**
+```json
+{
+  "parsed_content_list": "icon 0: ...\nicon 1: ...",
+  "label_coordinates": { ... },
+  "image_base64": "<base64 encoded labeled image>"
+}
+```
+
+### Using with Postman
+1. Create a new **POST** request to `http://localhost:8000/process`.
+2. Go to the **Body** tab and select **form-data**.
+3. Add a key `image`, set its type to **File**, and select a screenshot image.
+4. Optionally add `box_threshold`, `iou_threshold`, `use_paddleocr`, and `imgsz` as text fields.
+5. Click **Send**.
+
+### Using with cURL
+```bash
+curl -X POST http://localhost:8000/process \
+  -F "image=@screenshot.png" \
+  -F "box_threshold=0.05" \
+  -F "iou_threshold=0.1" \
+  -F "use_paddleocr=true" \
+  -F "imgsz=640"
+```
+
 ## Model Weights License
 For the model checkpoints on huggingface model hub, please note that icon_detect model is under AGPL license since it is a license inherited from the original yolo model. And icon_caption_blip2 & icon_caption_florence is under MIT license. Please refer to the LICENSE file in the folder of each model: https://huggingface.co/microsoft/OmniParser.
 
