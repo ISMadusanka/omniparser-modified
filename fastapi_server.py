@@ -10,6 +10,10 @@ from util.utils import check_ocr_box, get_yolo_model, get_caption_model_processo
 
 app = FastAPI(title="OmniParser API")
 
+@app.get("/health")
+async def health_check():
+    return JSONResponse(content={"status": "healthy"})
+
 # Initialize models
 print("Initializing models...")
 yolo_model = get_yolo_model(model_path='weights/icon_detect/model.pt')
